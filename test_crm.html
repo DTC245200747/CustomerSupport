@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Quản lý Toàn diện & Trợ lý AI Thông Minh</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        .auth-wrapper { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; position: relative; }
+        .role-select-container { background-color: #fff; border-radius: 24px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25); padding: 45px 35px; text-align: center; width: 820px; max-width: 90%; }
+        .role-select-container h1 { font-size: 26px; color: #2d3748; margin-bottom: 10px; font-weight: 700; }
+        .role-select-container p { font-size: 15px; color: #718096; margin-bottom: 35px; }
+        .role-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .btn-role { border: 2px solid #e2e8f0; border-radius: 16px; padding: 28px 20px; background: #fff; cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; gap: 12px; outline: none; }
+        .btn-role:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .btn-admin:hover { border-color: #e74c3c; background: #fffaf9; }
+        .btn-staff:hover { border-color: #f39c12; background: #fffdf9; }
+        .btn-customer:hover { border-color: #2ecc71; background: #f8fdfa; }
+        .role-icon { font-size: 42px; margin-bottom: 4px; }
+        .role-title { font-size: 18px; font-weight: 700; color: #2d3748; }
+        .role-desc { font-size: 13px; color: #718096; line-height: 1.4; }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-box { background: #fff; padding: 30px; border-radius: 16px; width: 450px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; }
+        .modal-box h2 { font-size: 20px; color: #512da8; margin-bottom: 10px; }
+        .modal-box p { font-size: 13px; color: #666; margin-bottom: 15px; }
+        .modal-box input, .modal-box select, .modal-box textarea { width: 100%; padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 12px; outline: none; font-size: 14px; }
+        .modal-box .btn-group { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
+        .modal-box button { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 13px; }
+        .btn-primary { background: #512da8; color: #fff; }
+        .btn-secondary { background: #e0e0e0; color: #333; }
+        .btn-success { background: #2ecc71; color: white; }
+        
+        .menu-item-with-badge { display: flex; align-items: center; justify-content: space-between; position: relative; }
+        .red-dot { display: inline-block; width: 10px; height: 10px; background-color: #e74c3c; border-radius: 50%; box-shadow: 0 0 8px #e74c3c; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(0.9); opacity: 0.8; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(0.9); opacity: 0.8; } }
+        
+        .dashboard-container { display: none; width: 100vw; height: 100vh; background-color: #f4f6f9; }
+        .app-layout { display: flex; height: 100%; }
+        .sidebar { width: 260px; background-color: #512da8; color: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; }
+        .sidebar-brand { font-size: 18px; font-weight: bold; margin-bottom: 25px; }
+        .user-info { background: rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 8px; margin-bottom: 20px; }
+        .user-info .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
+        .badge-admin { background-color: #e74c3c; color: white; }
+        .badge-staff { background-color: #f39c12; color: white; }
+        .badge-customer { background-color: #2ecc71; color: white; }
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li { padding: 12px 15px; border-radius: 8px; background: rgba(255, 255, 255, 0.1); font-weight: 600; cursor: pointer; margin-bottom: 8px; transition: 0.2s; }
+        .sidebar-menu li:hover, .sidebar-menu li.active { background: rgba(255, 255, 255, 0.25); }
+        .btn-logout { background-color: #e74c3c; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; text-align: center; width: 100%; }
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .header-title { font-size: 24px; font-weight: bold; color: #333; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        
+        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .grid-form input, .grid-form select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; width: 100%; }
+        .form-buttons { display: flex; gap: 10px; align-items: center; grid-column: 1 / -1; }
+        
+        .btn-action { background-color: #2ecc71; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .btn-export { background-color: #34495e; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; }
+        .btn-cancel { background-color: #7f8c8d; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; display: none; }
+        .filter-card { display: flex; gap: 15px; flex-wrap: wrap; }
+        .filter-card input, .filter-card select { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; flex: 1; min-width: 180px; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { background-color: #f8f9fa; color: #555; font-weight: 600; }
+        .btn-edit { background-color: #f39c12; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; margin-right: 4px; font-weight: 600; }
+        .btn-delete { background-color: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-reply { background-color: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-right: 4px; }
+        .status-pending { background: #ffeaa7; color: #d63031; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-resolved { background: #e3f2fd; color: #0288d1; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-closed { background: #55efc4; color: #00b894; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        
+        .chat-box { height: 350px; border: 1px solid #eee; border-radius: 8px; padding: 15px; overflow-y: auto; background: #fafafa; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .chat-message { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; }
+        .chat-message.ai { background-color: #eef2ff; color: #333; align-self: flex-start; }
+        .chat-message.user { background-color: #512da8; color: #fff; align-self: flex-end; }
+        .chat-input-wrapper { display: flex; gap: 10px; }
+        .chat-input-wrapper input { flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; }
+        .chat-input-wrapper button { background-color: #512da8; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        
+        .ticket-card { border: 1px solid #e0e0e0; border-radius: 10px; padding: 18px; margin-bottom: 15px; background: #fff; transition: 0.2s; }
+        .ticket-card:hover { border-color: #512da8; box-shadow: 0 4px 12px rgba(81, 45, 168, 0.08); }
+        .ticket-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; }
+        .ticket-history { background: #f8f9fa; border-radius: 8px; padding: 12px; margin: 10px 0; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; }
+        .history-item { font-size: 13px; padding: 8px 12px; border-radius: 6px; }
+        .history-item.customer { background: #e3f2fd; color: #0d47a1; align-self: flex-end; max-width: 85%; }
+        .history-item.staff { background: #f1f8e9; color: #1b5e20; align-self: flex-start; max-width: 85%; }
+        .ticket-action-buttons { display: flex; gap: 10px; margin-top: 12px; border-top: 1px dashed #eee; padding-top: 12px; }
+        
+        .star-rating { display: flex; gap: 8px; font-size: 28px; justify-content: center; cursor: pointer; margin: 15px 0; }
+        .star-rating span { color: #ccc; transition: color 0.2s; }
+        .star-rating span.active { color: #f1c40f; }
+    </style>
+</head>
+<body>
+    <div class="auth-wrapper" id="authWrapper">
+        <div class="role-select-container">
+            <h1>Hệ thống Quản lý Toàn diện & Trợ lý AI Thông Minh</h1>
+            <p>Vui lòng chọn vai trò truy cập để vào hệ thống</p>
+            <div class="role-buttons">
+                <button type="button" class="btn-role btn-admin" onclick="loginAsRole('admin')">
+                    <div class="role-icon">🛡️</div>
+                    <div class="role-title">Admin</div>
+                    <div class="role-desc">Quản trị toàn bộ hệ thống & tài khoản</div>
+                </button>
+                <button type="button" class="btn-role btn-staff" onclick="loginAsRole('staff')">
+                    <div class="role-icon">💼</div>
+                    <div class="role-title">Nhân viên</div>
+                    <div class="role-desc">Quản lý & phản hồi ticket hỗ trợ</div>
+                </button>
+                <button type="button" class="btn-role btn-customer" onclick="loginAsRole('customer')">
+                    <div class="role-icon">👤</div>
+                    <div class="role-title">Khách hàng</div>
+                    <div class="role-desc">Gửi yêu cầu hỗ trợ & Trợ lý AI</div>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="alertModal">
+        <div class="modal-box" style="text-align: center;">
+            <h2 id="alertModalTitle" style="color: #e74c3c;">⚠️ Thông Báo Cảnh Báo</h2>
+            <p id="alertModalMessage" style="margin: 15px 0; line-height: 1.6; font-size: 15px; color: #333; font-weight: 500;"></p>
+            <div class="btn-group" style="justify-content: center;">
+                <button type="button" class="btn-primary" onclick="closeAlertModal()">Đã Hiểu</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="createTicketModal">
+        <div class="modal-box">
+            <h2>📩 Gửi Yêu Cầu Hỗ Trợ (Ticket)</h2>
+            <p>Nhập thông tin yêu cầu để gửi trực tiếp đến nhân viên kỹ thuật.</p>
+            <form id="createTicketForm">
+                <select id="ticketCategory" required>
+                    <option value="Bảo hành / Sửa chữa">Bảo hành / Sửa chữa</option>
+                    <option value="Tư vấn Kỹ thuật">Tư vấn Kỹ thuật</option>
+                    <option value="Hóa đơn / Thanh toán">Hóa đơn / Thanh toán</option>
+                </select>
+                <input type="text" id="ticketSubject" placeholder="Tiêu đề yêu cầu..." required />
+                <textarea id="ticketContent" rows="4" placeholder="Nội dung chi tiết..." required></textarea>
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" id="closeTicketModal">Hủy</button>
+                    <button type="submit" class="btn-primary">Gửi Ticket</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="customerReplyModal">
+        <div class="modal-box">
+            <h2>💬 Trả Lời Tiếp Phản Hồi</h2>
+            <p id="customerReplySubtitle">Nhập câu hỏi hoặc phản hồi bổ sung cho nhân viên hỗ trợ.</p>
+            <form id="customerReplyForm">
+                <input type="hidden" id="customerReplyTicketId" />
+                <textarea id="customerReplyContent" rows="4" placeholder="Nhập tin nhắn phản hồi của bạn..." required></textarea>
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="closeCustomerReplyModal()">Hủy</button>
+                    <button type="submit" class="btn-primary">Gửi Phản Hồi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="ratingModal">
+        <div class="modal-box" style="text-align: center;">
+            <h2>⭐ Đánh Giá Chất Lượng Hỗ Trợ</h2>
+            <p>Cảm ơn bạn đã xác nhận! Vui lòng dành ít giây đánh giá chất lượng phục vụ của nhân viên.</p>
+            <form id="ratingForm">
+                <input type="hidden" id="ratingTicketId" />
+                <div class="star-rating" id="starRating">
+                    <span data-star="1">★</span>
+                    <span data-star="2">★</span>
+                    <span data-star="3">★</span>
+                    <span data-star="4">★</span>
+                    <span data-star="5" class="active">★</span>
+                </div>
+                <textarea id="ratingComment" rows="3" placeholder="Nhận xét hoặc góp ý thêm (không bắt buộc)..."></textarea>
+                <div class="btn-group" style="justify-content: center;">
+                    <button type="submit" class="btn-success">⭐ Gửi Đánh Giá</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="dashboard-container" id="dashboard">
+        <div class="app-layout">
+            <aside class="sidebar">
+                <div>
+                    <div class="sidebar-brand">⚙️ System Management</div>
+                    <div class="user-info">
+                        <div id="displayEmail" style="font-weight: bold; font-size: 13px;">user@domain.com</div>
+                        <span id="displayRoleBadge" class="badge">Role</span>
+                    </div>
+                    <ul class="sidebar-menu" id="sidebarMenu"></ul>
+                </div>
+                <button class="btn-logout" id="logoutBtn">Đăng xuất</button>
+            </aside>
+            <main class="main-content">
+                <div id="userManagementView" style="display: none;">
+                    <div class="header-title">
+                        <span id="userManageHeaderTitle">👥 Quản Lý Tài Khoản Khách Hàng & Nhân Viên</span>
+                        <button class="btn-export" onclick="exportUsersCSV()"> Xuất CSV</button>
+                    </div>
+                    <div class="card">
+                        <h3 id="userFormTitle" style="margin-bottom: 15px; color: #512da8;">Thêm Tài Khoản Mới</h3>
+                        <form class="grid-form" id="userForm">
+                            <input type="hidden" id="userId" />
+                            <select id="userRole" required>
+                                <option value="customer">Khách hàng</option>
+                                <option value="staff" id="staffRoleOption">Nhân viên</option>
+                            </select>
+                            <input type="text" id="userName" placeholder="Họ và Tên" required />
+                            <input type="text" id="userEmail" placeholder="Email / Tên đăng nhập" required />
+                            <input type="password" id="userPassword" placeholder="Mật khẩu" required />
+                            <input type="tel" id="userPhone" placeholder="Số điện thoại" required />
+                            <input type="text" id="userAddress" placeholder="Địa chỉ" />
+                            <div class="form-buttons">
+                                <button type="submit" class="btn-action" id="submitUserBtn">Lưu Tài Khoản</button>
+                                <button type="button" class="btn-cancel" id="cancelUserBtn">Hủy</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <div class="filter-card" style="margin-bottom: 15px;">
+                            <input type="text" id="searchUser" placeholder="🔍 Tìm kiếm theo Tên hoặc Email..." />
+                            <select id="filterUserRole">
+                                <option value="all">Tất cả Vai trò</option>
+                                <option value="customer">Khách hàng</option>
+                                <option value="staff" id="filterStaffRoleOption">Nhân viên</option>
+                            </select>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Vai trò</th>
+                                    <th>Họ và Tên</th>
+                                    <th>Email</th>
+                                    <th>Số Điện Thoại</th>
+                                    <th>Địa chỉ</th>
+                                    <th style="width: 140px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="ticketManagementView" style="display: none;">
+                    <div class="header-title">
+                        <span id="ticketManageHeaderTitle">📊 Báo Cáo Số Liệu Tickets Hỗ Trợ</span>
+                        <button class="btn-export" onclick="exportTicketsCSV()"> Xuất CSV</button>
+                    </div>
+                    <div class="card">
+                        <div class="filter-card" style="margin-bottom: 15px;">
+                            <select id="ticketStatusFilter">
+                                <option value="all">Tất cả Trạng thái</option>
+                                <option value="Pending">Chờ xử lý</option>
+                                <option value="Resolved">Đã trả lời</option>
+                                <option value="Closed">Đã hoàn thành (Đóng)</option>
+                            </select>
+                            <select id="ticketSortFilter">
+                                <option value="newest">Mới nhất trước</option>
+                                <option value="oldest">Cũ nhất trước</option>
+                            </select>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã Ticket</th>
+                                    <th>Khách hàng</th>
+                                    <th>Danh mục</th>
+                                    <th>Tiêu đề & Nội dung</th>
+                                    <th>Trạng thái</th>
+                                    <th>Phản hồi gần nhất</th>
+                                    <th style="width: 140px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="staffTicketTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="aiAssistantView" style="display: none;">
+                    <div class="header-title">
+                        <span>🤖 Trợ Lý Chat Box AI</span>
+                    </div>
+                    <div class="card">
+                        <div class="chat-box" id="chatBox"></div>
+                        <form id="aiAskForm" class="chat-input-wrapper">
+                            <input type="text" id="aiInputPrompt" placeholder="Đặt câu hỏi tra cứu hoặc yêu cầu AI thêm khách hàng / tạo ticket..." required />
+                            <button type="submit">💬 Gửi Câu Hỏi</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div id="customerTicketView" style="display: none;">
+                    <div class="header-title">
+                        <span>🎫 Danh Sách Ticket Hỗ Trợ Của Bạn</span>
+                        <button class="btn-action" id="btnOpenCreateTicketModal">➕ Tạo Ticket Mới</button>
+                    </div>
+                    <div id="customerTicketListContainer"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const authWrapper = document.getElementById('authWrapper');
+        const dashboard = document.getElementById('dashboard');
+        let currentUser = null; 
+        let selectedStars = 5;
+
+        function showAlertModal(title, message) {
+            document.getElementById('alertModalTitle').innerHTML = title;
+            document.getElementById('alertModalMessage').innerHTML = message;
+            document.getElementById('alertModal').style.display = 'flex';
+        }
+        function closeAlertModal() {
+            document.getElementById('alertModal').style.display = 'none';
+        }
+
+        let usersList = JSON.parse(localStorage.getItem('usersList')) || [
+            { id: 1, role: "customer", name: "Nguyễn Văn A", email: "anguyen@gmail.com", password: "123", phone: "0901234567", address: "Hà Nội" },
+            { id: 2, role: "customer", name: "Bùi Thị C", email: "cbui@gmail.com", password: "123", phone: "0912345678", address: "TP. Hồ Chí Minh" },
+            { id: 5, role: "customer", name: "Lê Minh Đức", email: "ducle@gmail.com", password: "123", phone: "0934567890", address: "Hải Phòng" },
+            { id: 6, role: "customer", name: "Phạm Thu Hà", email: "hapham@gmail.com", password: "123", phone: "0945678901", address: "Đà Nẵng" },
+            { id: 7, role: "customer", name: "Vũ Quốc Huy", email: "huyvu@gmail.com", password: "123", phone: "0956789012", address: "Cần Thơ" },
+            { id: 8, role: "customer", name: "Đặng Ngọc Lan", email: "landang@gmail.com", password: "123", phone: "0967890123", address: "Huế" },
+            { id: 9, role: "customer", name: "Hoàng Anh Tuấn", email: "tuanhoang@gmail.com", password: "123", phone: "0978901234", address: "Nha Trang" },
+            { id: 3, role: "staff", name: "Trần Nhân Viên", email: "tran@staff", password: "123", phone: "0988888888", address: "Đà Nẵng" },
+            { id: 10, role: "staff", name: "Ngô Thị Mai", email: "mai@staff", password: "123", phone: "0911122233", address: "Hà Nội" },
+            { id: 11, role: "staff", name: "Đỗ Văn Kiên", email: "kien@staff", password: "123", phone: "0922233344", address: "TP. Hồ Chí Minh" },
+            { id: 4, role: "admin", name: "Quản Trị Viên", email: "admin@admin", password: "123", phone: "0999999999", address: "Hà Nội" }
+        ];
+
+        let globalTickets = JSON.parse(localStorage.getItem('globalTickets')) || [
+            {
+                id: "TK-1001",
+                customerEmail: "anguyen@gmail.com",
+                category: "Bảo hành / Sửa chữa",
+                subject: "Sản phẩm hỏng màn hình",
+                status: "Resolved",
+                hasUnreadReply: true,
+                customerAccepted: false,
+                rating: null,
+                ratingComment: "",
+                history: [
+                    { sender: "customer", text: "Tôi mua máy tuần trước nhưng giờ màn hình bị sọc.", time: "10:00 08/09" },
+                    { sender: "staff", text: "Chào bạn, bạn vui lòng mang máy đến trung tâm bảo hành gần nhất để được đổi mới nhé!", time: "10:30 08/09" }
+                ],
+                createdAt: new Date("2026-09-08T10:00:00").getTime()
+            },
+            {
+                id: "TK-1002",
+                customerEmail: "cbui@gmail.com",
+                category: "Hóa đơn / Thanh toán",
+                subject: "Chưa nhận được hóa đơn VAT",
+                status: "Pending",
+                hasUnreadReply: false,
+                customerAccepted: false,
+                rating: null,
+                ratingComment: "",
+                history: [
+                    { sender: "customer", text: "Tôi đã thanh toán đơn hàng #DH2209 nhưng chưa nhận được hóa đơn VAT qua email.", time: "09:15 12/09" }
+                ],
+                createdAt: new Date("2026-09-12T09:15:00").getTime()
+            },
+            {
+                id: "TK-1003",
+                customerEmail: "ducle@gmail.com",
+                category: "Tư vấn Kỹ thuật",
+                subject: "Không kết nối được Wifi",
+                status: "Resolved",
+                hasUnreadReply: false,
+                customerAccepted: false,
+                rating: null,
+                ratingComment: "",
+                history: [
+                    { sender: "customer", text: "Thiết bị của tôi không tìm thấy mạng Wifi sau khi cập nhật phần mềm.", time: "14:20 14/09" },
+                    { sender: "staff", text: "Bạn thử khởi động lại thiết bị và quên mạng Wifi rồi kết nối lại giúp mình nhé!", time: "15:05 14/09" }
+                ],
+                createdAt: new Date("2026-09-14T14:20:00").getTime()
+            },
+            {
+                id: "TK-1004",
+                customerEmail: "hapham@gmail.com",
+                category: "Bảo hành / Sửa chữa",
+                subject: "Pin sụt nhanh bất thường",
+                status: "Closed",
+                hasUnreadReply: false,
+                customerAccepted: true,
+                rating: 5,
+                ratingComment: "Nhân viên hỗ trợ rất nhiệt tình và nhanh chóng!",
+                history: [
+                    { sender: "customer", text: "Pin máy tụt từ 100% xuống 20% chỉ sau 2 tiếng sử dụng.", time: "08:40 10/09" },
+                    { sender: "staff", text: "Đây có thể do lỗi pin, vui lòng mang máy đến trung tâm bảo hành để kiểm tra miễn phí.", time: "09:10 10/09" },
+                    { sender: "customer", text: "Đã mang đến và được đổi pin mới, cảm ơn shop!", time: "16:30 11/09" }
+                ],
+                createdAt: new Date("2026-09-10T08:40:00").getTime()
+            },
+            {
+                id: "TK-1005",
+                customerEmail: "huyvu@gmail.com",
+                category: "Tư vấn Kỹ thuật",
+                subject: "Hướng dẫn cài đặt phần mềm bản quyền",
+                status: "Pending",
+                hasUnreadReply: false,
+                customerAccepted: false,
+                rating: null,
+                ratingComment: "",
+                history: [
+                    { sender: "customer", text: "Tôi cần hướng dẫn cài đặt lại phần mềm bản quyền đã mua kèm máy.", time: "11:00 16/09" }
+                ],
+                createdAt: new Date("2026-09-16T11:00:00").getTime()
+            },
+            {
+                id: "TK-1006",
+                customerEmail: "landang@gmail.com",
+                category: "Hóa đơn / Thanh toán",
+                subject: "Yêu cầu hoàn tiền đơn hàng bị hủy",
+                status: "Resolved",
+                hasUnreadReply: true,
+                customerAccepted: false,
+                rating: null,
+                ratingComment: "",
+                history: [
+                    { sender: "customer", text: "Đơn hàng #DH2245 của tôi bị hủy nhưng chưa thấy hoàn tiền.", time: "13:00 17/09" },
+                    { sender: "staff", text: "Chúng tôi đã kiểm tra và tiến hành hoàn tiền, tiền sẽ về tài khoản trong 3-5 ngày làm việc.", time: "14:45 17/09" }
+                ],
+                createdAt: new Date("2026-09-17T13:00:00").getTime()
+            },
+            {
+                id: "TK-1007",
+                customerEmail: "tuanhoang@gmail.com",
+                category: "Bảo hành / Sửa chữa",
+                subject: "Máy bị treo logo khi khởi động",
+                status: "Pending",
+                hasUnreadReply: false,
+                customerAccepted: false,
+                rating: null,
+                ratingComment: "",
+                history: [
+                    { sender: "customer", text: "Sau khi cập nhật hệ điều hành, máy bị treo ở màn hình logo, không vào được.", time: "19:30 20/09" }
+                ],
+                createdAt: new Date("2026-09-20T19:30:00").getTime()
+            },
+            {
+                id: "TK-1008",
+                customerEmail: "anguyen@gmail.com",
+                category: "Tư vấn Kỹ thuật",
+                subject: "Tư vấn nâng cấp RAM",
+                status: "Closed",
+                hasUnreadReply: false,
+                customerAccepted: true,
+                rating: 4,
+                ratingComment: "Phản hồi hơi chậm nhưng tư vấn ổn.",
+                history: [
+                    { sender: "customer", text: "Máy tôi dùng RAM 8GB có nâng cấp lên 16GB được không?", time: "10:00 18/09" },
+                    { sender: "staff", text: "Được bạn nhé, máy bạn hỗ trợ tối đa 16GB, bạn có thể mang đến để nhân viên hỗ trợ lắp đặt.", time: "12:30 18/09" }
+                ],
+                createdAt: new Date("2026-09-18T10:00:00").getTime()
+            }
+        ];
+
+        function saveData() {
+            localStorage.setItem('usersList', JSON.stringify(usersList));
+            localStorage.setItem('globalTickets', JSON.stringify(globalTickets));
+            checkRedDotNotification();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                setupDashboardByRole();
+                authWrapper.style.display = 'none';
+                dashboard.style.display = 'block';
+            }
+        });
+
+        function loginAsRole(role) {
+            let targetUser = usersList.find(u => u.role === role);
+            if (!targetUser) {
+                if (role === 'admin') {
+                    targetUser = { id: 4, role: "admin", name: "Quản Trị Viên", email: "admin@admin", password: "123", phone: "0999999999", address: "Hà Nội" };
+                } else if (role === 'staff') {
+                    targetUser = { id: 3, role: "staff", name: "Trần Nhân Viên", email: "tran@staff", password: "123", phone: "0988888888", address: "Đà Nẵng" };
+                } else {
+                    targetUser = { id: 1, role: "customer", name: "Nguyễn Văn A", email: "anguyen@gmail.com", password: "123", phone: "0901234567", address: "Hà Nội" };
+                }
+            }
+            currentUser = targetUser;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            authWrapper.style.display = 'none';
+            dashboard.style.display = 'block';
+            setupDashboardByRole();
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            sessionStorage.removeItem('currentUser');
+            dashboard.style.display = 'none';
+            authWrapper.style.display = 'flex';
+        });
+
+        function setupDashboardByRole() {
+            document.getElementById('displayEmail').innerText = currentUser.email;
+            const badge = document.getElementById('displayRoleBadge');
+            badge.innerText = currentUser.role.toUpperCase();
+            badge.className = 'badge ' + (currentUser.role === 'admin' ? 'badge-admin' : currentUser.role === 'staff' ? 'badge-staff' : 'badge-customer');
+            const menu = document.getElementById('sidebarMenu');
+            menu.innerHTML = '';
+            if (currentUser.role === 'admin' || currentUser.role === 'staff') {
+                menu.innerHTML += `<li class="active" onclick="switchView('userManagementView', this)">👥 Quản lý Người dùng</li>`;
+                const ticketMenuLabel = currentUser.role === 'admin' ? '📊 Báo Cáo Số Liệu' : '📋 Quản Lý Tickets';
+                menu.innerHTML += `<li onclick="switchView('ticketManagementView', this)" class="menu-item-with-badge">
+                    <span>${ticketMenuLabel}</span>
+                    <span id="staffTicketRedDot" class="red-dot" style="display: none;"></span>
+                </li>`;
+                menu.innerHTML += `<li onclick="switchView('aiAssistantView', this)">🤖 Trợ Lý AI</li>`;
+                document.getElementById('ticketManageHeaderTitle').innerText = currentUser.role === 'admin'
+                    ? '📊 Báo Cáo Số Liệu Tickets Hỗ Trợ'
+                    : '📋 Quản Lý Tickets Hỗ Trợ';
+            } else {
+                menu.innerHTML += `<li class="active" onclick="switchView('customerTicketView', this)" class="menu-item-with-badge">
+                    <span>🎫 Support Tickets</span>
+                    <span id="customerTicketRedDot" class="red-dot" style="display: none;"></span>
+                </li>`;
+                menu.innerHTML += `<li onclick="switchView('aiAssistantView', this)">🤖 Trợ Lý AI</li>`;
+            }
+
+            if (currentUser.role === 'staff') {
+                document.getElementById('staffRoleOption').style.display = 'none';
+                document.getElementById('filterStaffRoleOption').style.display = 'none';
+                document.getElementById('userRole').value = 'customer';
+                document.getElementById('userManageHeaderTitle').innerText = '👥 Quản Lý Khách Hàng';
+            } else if (currentUser.role === 'admin') {
+                document.getElementById('staffRoleOption').style.display = 'block';
+                document.getElementById('filterStaffRoleOption').style.display = 'block';
+                document.getElementById('userManageHeaderTitle').innerText = '👥 Quản Lý Tài Khoản Khách Hàng & Nhân Viên';
+            }
+
+            if (currentUser.role === 'admin' || currentUser.role === 'staff') {
+                switchView('userManagementView');
+                renderUsersTable();
+                renderStaffTicketTable();
+            } else {
+                switchView('customerTicketView');
+                renderCustomerTickets();
+            }
+            initAIChat();
+            checkRedDotNotification();
+        }
+
+        function switchView(viewId, element) {
+            document.querySelectorAll('.main-content > div').forEach(div => div.style.display = 'none');
+            document.getElementById(viewId).style.display = 'block';
+            if (element) {
+                document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+                element.classList.add('active');
+            }
+        }
+
+        function checkRedDotNotification() {
+            const staffRedDot = document.getElementById('staffTicketRedDot');
+            const customerRedDot = document.getElementById('customerTicketRedDot');
+            if (staffRedDot) {
+                const hasPending = globalTickets.some(t => t.status === 'Pending');
+                staffRedDot.style.display = hasPending ? 'inline-block' : 'none';
+            }
+            if (customerRedDot && currentUser && currentUser.role === 'customer') {
+                const hasUnread = globalTickets.some(t => t.customerEmail === currentUser.email && t.hasUnreadReply);
+                customerRedDot.style.display = hasUnread ? 'inline-block' : 'none';
+            }
+        }
+
+        function renderUsersTable() {
+            const tbody = document.getElementById('userTableBody');
+            const search = document.getElementById('searchUser').value.toLowerCase();
+            const filterRole = document.getElementById('filterUserRole').value;
+            tbody.innerHTML = '';
+            let filtered = usersList.filter(u => {
+                const matchSearch = u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search);
+                const matchRole = filterRole === 'all' || u.role === filterRole;
+                return matchSearch && matchRole;
+            });
+            if (currentUser.role === 'staff') {
+                filtered = filtered.filter(u => u.role !== 'admin');
+            }
+            filtered.forEach((u, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><span class="badge ${u.role === 'admin' ? 'badge-admin' : u.role === 'staff' ? 'badge-staff' : 'badge-customer'}">${u.role.toUpperCase()}</span></td>
+                    <td>${u.name}</td>
+                    <td>${u.email}</td>
+                    <td>${u.phone}</td>
+                    <td>${u.address || '-'}</td>
+                    <td>
+                        <button class="btn-edit" onclick="editUser(${u.id})">Sửa</button>
+                        <button class="btn-delete" onclick="deleteUser(${u.id})">Xóa</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        document.getElementById('searchUser').addEventListener('input', renderUsersTable);
+        document.getElementById('filterUserRole').addEventListener('change', renderUsersTable);
+
+        document.getElementById('userForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('userId').value;
+            const role = document.getElementById('userRole').value;
+            const name = document.getElementById('userName').value.trim();
+            const email = document.getElementById('userEmail').value.trim();
+            const password = document.getElementById('userPassword').value;
+            const phone = document.getElementById('userPhone').value.trim();
+            const address = document.getElementById('userAddress').value.trim();
+            if (id) {
+                const user = usersList.find(u => u.id == id);
+                if (user) {
+                    user.role = role;
+                    user.name = name;
+                    user.email = email;
+                    user.password = password;
+                    user.phone = phone;
+                    user.address = address;
+                }
+            } else {
+                usersList.unshift({ id: Date.now(), role, name, email, password, phone, address });
+            }
+            saveData();
+            resetUserForm();
+            renderUsersTable();
+            showAlertModal('✅ Thành Công', 'Thông tin người dùng đã được lưu!');
+        });
+
+        function editUser(id) {
+            const user = usersList.find(u => u.id === id);
+            if (!user) return;
+            document.getElementById('userId').value = user.id;
+            document.getElementById('userRole').value = user.role;
+            document.getElementById('userName').value = user.name;
+            document.getElementById('userEmail').value = user.email;
+            document.getElementById('userPassword').value = user.password;
+            document.getElementById('userPhone').value = user.phone;
+            document.getElementById('userAddress').value = user.address || '';
+            document.getElementById('userFormTitle').innerText = 'Chỉnh Sửa Tài Khoản';
+            document.getElementById('submitUserBtn').innerText = 'Cập Nhật';
+            document.getElementById('cancelUserBtn').style.display = 'inline-block';
+        }
+
+        function deleteUser(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa người dùng này không?')) {
+                usersList = usersList.filter(u => u.id !== id);
+                saveData();
+                renderUsersTable();
+            }
+        }
+
+        document.getElementById('cancelUserBtn').addEventListener('click', resetUserForm);
+
+        function resetUserForm() {
+            document.getElementById('userForm').reset();
+            document.getElementById('userId').value = '';
+            document.getElementById('userFormTitle').innerText = 'Thêm Tài Khoản Mới';
+            document.getElementById('submitUserBtn').innerText = 'Lưu Tài Khoản';
+            document.getElementById('cancelUserBtn').style.display = 'none';
+        }
+
+        function exportUsersCSV() {
+            let csv = '\uFEFFSTT,Vai tro,Ho va Ten,Email,So Dien Thoai,Dia chi\n';
+            usersList.forEach((u, i) => {
+                csv += `"${i + 1}","${u.role}","${u.name}","${u.email}","${u.phone}","${u.address || ''}"\n`;
+            });
+            downloadCSV(csv, 'Danh_Sach_Nguoi_Dung.csv');
+        }
+
+        function renderStaffTicketTable() {
+            const tbody = document.getElementById('staffTicketTableBody');
+            const filterStatus = document.getElementById('ticketStatusFilter').value;
+            const filterSort = document.getElementById('ticketSortFilter').value;
+            tbody.innerHTML = '';
+            let list = [...globalTickets];
+            if (filterStatus !== 'all') {
+                list = list.filter(t => t.status === filterStatus);
+            }
+            list.sort((a, b) => filterSort === 'newest' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt);
+            list.forEach(ticket => {
+                const lastHistory = ticket.history[ticket.history.length - 1];
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${ticket.id}</strong></td>
+                    <td>${ticket.customerEmail}</td>
+                    <td>${ticket.category}</td>
+                    <td>
+                        <strong>${ticket.subject}</strong>
+                        <div style="font-size: 12px; color: #666; margin-top: 4px;">${ticket.history[0]?.text || ''}</div>
+                    </td>
+                    <td>
+                        <span class="${ticket.status === 'Pending' ? 'status-pending' : ticket.status === 'Resolved' ? 'status-resolved' : 'status-closed'}">
+                            ${ticket.status === 'Pending' ? 'Chờ xử lý' : ticket.status === 'Resolved' ? 'Đã trả lời' : 'Đã đóng'}
+                        </span>
+                    </td>
+                    <td style="font-size: 12px;">
+                        <em>[${lastHistory.sender === 'staff' ? 'NV' : 'Khách'}] ${lastHistory.text}</em>
+                    </td>
+                    <td>
+                        ${ticket.status !== 'Closed' ? `<button class="btn-reply" onclick="replyTicketModal('${ticket.id}')">Trả lời</button>` : ''}
+                        <button class="btn-delete" onclick="deleteTicket('${ticket.id}')">Xóa</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        document.getElementById('ticketStatusFilter').addEventListener('change', renderStaffTicketTable);
+        document.getElementById('ticketSortFilter').addEventListener('change', renderStaffTicketTable);
+
+        function replyTicketModal(ticketId) {
+            const replyMsg = prompt("Nhập phản hồi của bạn tới khách hàng:");
+            if (replyMsg && replyMsg.trim() !== '') {
+                const ticket = globalTickets.find(t => t.id === ticketId);
+                if (ticket) {
+                    const now = new Date();
+                    const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')} ${now.getDate()}/${now.getMonth() + 1}`;
+                    ticket.history.push({ sender: 'staff', text: replyMsg.trim(), time: timeStr });
+                    ticket.status = 'Resolved';
+                    ticket.hasUnreadReply = true;
+                    saveData();
+                    renderStaffTicketTable();
+                    showAlertModal('✅ Đã Trả Lời', 'Phản hồi đã được gửi thành công tới khách hàng!');
+                }
+            }
+        }
+
+        function deleteTicket(ticketId) {
+            if (confirm('Bạn có chắc muốn xóa Ticket này?')) {
+                globalTickets = globalTickets.filter(t => t.id !== ticketId);
+                saveData();
+                renderStaffTicketTable();
+            }
+        }
+
+        function exportTicketsCSV() {
+            let csv = '\uFEFFMa Ticket,Khach Hang,Danh Muc,Tieu De,Trang Thai,Ngay Tao\n';
+            globalTickets.forEach(t => {
+                csv += `"${t.id}","${t.customerEmail}","${t.category}","${t.subject}","${t.status}","${new Date(t.createdAt).toLocaleString()}"\n`;
+            });
+            downloadCSV(csv, 'Danh_Sach_Tickets.csv');
+        }
+
+        function initAIChat() {
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML = `
+                <div class="chat-message ai">
+                    🤖 Xin chào <strong>${currentUser ? currentUser.name : ''}</strong>! Tôi là Trợ lý AI có quyền quản trị. Bạn có thể yêu cầu tôi tra cứu dữ liệu, thêm khách hàng hoặc tạo/cập nhật ticket hỗ trợ!
+                </div>
+            `;
+        }
+
+        async function sendToBackend(e) {
+            e.preventDefault();
+            const inputPrompt = document.getElementById("aiInputPrompt");
+            const message = inputPrompt.value.trim();
+            if (!message) return;
+
+            const chatBox = document.getElementById("chatBox");
+            chatBox.innerHTML += `<div class="chat-message user">${message}</div>`;
+            inputPrompt.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            chatBox.innerHTML += `<div class="chat-message ai" id="loadingMsg">🤖 Đang xử lý yêu cầu...</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const systemContext = {
+                usersList: usersList,
+                ticketsList: globalTickets.map(t => ({
+                    id: t.id,
+                    customerEmail: t.customerEmail,
+                    category: t.category,
+                    subject: t.subject,
+                    status: t.status,
+                    createdAt: new Date(t.createdAt).toLocaleString(),
+                    history: t.history
+                })),
+                currentUserRole: currentUser ? currentUser.role : 'Guest',
+                currentUserName: currentUser ? currentUser.name : 'Guest',
+                currentUserEmail: currentUser ? currentUser.email : ''
+            };
+
+            try {
+                const response = await fetch("http://localhost:3001/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message, systemContext })
+                });
+                const data = await response.json();
+                document.getElementById("loadingMsg")?.remove();
+
+                if (data.reply) {
+                    chatBox.innerHTML += `<div class="chat-message ai">🤖 ${data.reply}</div>`;
+                    if (data.action) {
+                        executeAIAction(data.action);
+                    }
+                } else {
+                    chatBox.innerHTML += `<div class="chat-message ai">🤖 Lỗi: ${JSON.stringify(data)}</div>`;
+                }
+            } catch (error) {
+                document.getElementById("loadingMsg")?.remove();
+                chatBox.innerHTML += `<div class="chat-message ai">🤖 Không thể kết nối tới Server Backend! Hãy đảm bảo server.js đang chạy.</div>`;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function executeAIAction(action) {
+            if (!action || !action.type) return;
+
+            if (action.type === 'CREATE_CUSTOMER') {
+                const { name, email, phone, address, role } = action.payload || {};
+                const newUser = {
+                    id: Date.now(),
+                    role: role || 'customer',
+                    name: name || 'Khách hàng mới',
+                    email: email || `user_${Date.now()}@gmail.com`,
+                    password: '123',
+                    phone: phone || '0900000000',
+                    address: address || 'Chưa cập nhật'
+                };
+                usersList.unshift(newUser);
+                saveData();
+                renderUsersTable();
+                showAlertModal('🎉 AI Tự Động Thực Hiện', `Đã thêm thành công khách hàng: <strong>${newUser.name}</strong> (${newUser.email}) vào hệ thống!`);
+            } 
+            else if (action.type === 'CREATE_TICKET') {
+                const { subject, category, content } = action.payload || {};
+                const now = new Date();
+                const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')} ${now.getDate()}/${now.getMonth() + 1}`;
+                const newTicket = {
+                    id: "TK-" + Math.floor(1000 + Math.random() * 9000),
+                    customerEmail: currentUser ? currentUser.email : 'guest@gmail.com',
+                    category: category || "Tư vấn Kỹ thuật",
+                    subject: subject || "Yêu cầu hỗ trợ từ AI",
+                    status: "Pending",
+                    hasUnreadReply: false,
+                    customerAccepted: false,
+                    rating: null,
+                    ratingComment: "",
+                    history: [
+                        { sender: "customer", text: content || subject, time: timeStr }
+                    ],
+                    createdAt: Date.now()
+                };
+                globalTickets.unshift(newTicket);
+                saveData();
+                if (currentUser && currentUser.role === 'customer') renderCustomerTickets();
+                if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'staff')) renderStaffTicketTable();
+                showAlertModal('🎉 AI Tự Động Thực Hiện', `Đã tạo thành công Ticket mới mã <strong>${newTicket.id}</strong>!`);
+            }
+            else if (action.type === 'UPDATE_TICKET_STATUS') {
+                const { ticketId, status } = action.payload || {};
+                const ticket = globalTickets.find(t => t.id === ticketId);
+                if (ticket) {
+                    ticket.status = status;
+                    saveData();
+                    if (currentUser && currentUser.role === 'customer') renderCustomerTickets();
+                    if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'staff')) renderStaffTicketTable();
+                    showAlertModal('🎉 AI Tự Động Thực Hiện', `Đã cập nhật trạng thái Ticket <strong>${ticketId}</strong> thành ${status}!`);
+                }
+            }
+        }
+
+        document.getElementById("aiAskForm").addEventListener("submit", sendToBackend);
+
+        function renderCustomerTickets() {
+            const container = document.getElementById('customerTicketListContainer');
+            container.innerHTML = '';
+            const myTickets = globalTickets.filter(t => t.customerEmail === currentUser.email);
+            if (myTickets.length === 0) {
+                container.innerHTML = `<div class="card" style="text-align: center; color: #777;">Bạn chưa gửi yêu cầu hỗ trợ nào. Bấm nút "Tạo Ticket Mới" hoặc nhờ Chatbot AI tạo giúp!</div>`;
+                return;
+            }
+            myTickets.forEach(ticket => {
+                let historyHtml = ticket.history.map(h => `
+                    <div class="history-item ${h.sender}">
+                        <strong>${h.sender === 'customer' ? 'Bạn' : 'Nhân viên hỗ trợ'}:</strong> ${h.text}
+                        <div style="font-size: 10px; opacity: 0.7; text-align: right; margin-top: 3px;">${h.time}</div>
+                    </div>
+                `).join('');
+                const card = document.createElement('div');
+                card.className = 'ticket-card';
+                card.innerHTML = `
+                    <div class="ticket-header">
+                        <div>
+                            <strong style="color: #512da8; font-size: 16px;">[${ticket.id}] ${ticket.subject}</strong>
+                            <span style="font-size: 12px; color: #888; margin-left: 10px;">📌 ${ticket.category}</span>
+                        </div>
+                        <span class="${ticket.status === 'Pending' ? 'status-pending' : ticket.status === 'Resolved' ? 'status-resolved' : 'status-closed'}">
+                            ${ticket.status === 'Pending' ? 'Chờ xử lý' : ticket.status === 'Resolved' ? 'Đã trả lời' : 'Đã hoàn thành'}
+                        </span>
+                    </div>
+                    <div class="ticket-history">${historyHtml}</div>
+                    <div class="ticket-action-buttons">
+                        ${ticket.status !== 'Closed' ? `
+                            <button class="btn-action" onclick="openCustomerReplyModal('${ticket.id}')">💬 Phản hồi tiếp</button>
+                            <button class="btn-success" onclick="openRatingModal('${ticket.id}')">✅ Xác nhận hoàn thành & Đánh giá</button>
+                        ` : `
+                            <div style="font-size: 13px; color: #2ecc71; font-weight: bold;">
+                                ✅ Ticket này đã được đóng. ${ticket.rating ? `Đánh giá: ${'★'.repeat(ticket.rating)}` : ''}
+                            </div>
+                        `}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        document.getElementById('btnOpenCreateTicketModal').addEventListener('click', () => {
+            document.getElementById('createTicketModal').style.display = 'flex';
+        });
+        document.getElementById('closeTicketModal').addEventListener('click', () => {
+            document.getElementById('createTicketModal').style.display = 'none';
+        });
+        document.getElementById('createTicketForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const category = document.getElementById('ticketCategory').value;
+            const subject = document.getElementById('ticketSubject').value.trim();
+            const content = document.getElementById('ticketContent').value.trim();
+            const now = new Date();
+            const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')} ${now.getDate()}/${now.getMonth() + 1}`;
+            const newTicket = {
+                id: "TK-" + Math.floor(1000 + Math.random() * 9000),
+                customerEmail: currentUser.email,
+                category,
+                subject,
+                status: "Pending",
+                hasUnreadReply: false,
+                customerAccepted: false,
+                rating: null,
+                ratingComment: "",
+                history: [
+                    { sender: "customer", text: content, time: timeStr }
+                ],
+                createdAt: Date.now()
+            };
+            globalTickets.unshift(newTicket);
+            saveData();
+            document.getElementById('createTicketModal').style.display = 'none';
+            document.getElementById('createTicketForm').reset();
+            renderCustomerTickets();
+            showAlertModal('🎉 Gửi Yêu Cầu Thành Công', 'Yêu cầu của bạn đã được chuyển đến bộ phận hỗ trợ kỹ thuật!');
+        });
+
+        function openCustomerReplyModal(ticketId) {
+            document.getElementById('customerReplyTicketId').value = ticketId;
+            document.getElementById('customerReplyModal').style.display = 'flex';
+            const ticket = globalTickets.find(t => t.id === ticketId);
+            if (ticket) {
+                ticket.hasUnreadReply = false;
+                saveData();
+            }
+        }
+        function closeCustomerReplyModal() {
+            document.getElementById('customerReplyModal').style.display = 'none';
+        }
+        document.getElementById('customerReplyForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const ticketId = document.getElementById('customerReplyTicketId').value;
+            const content = document.getElementById('customerReplyContent').value.trim();
+            const ticket = globalTickets.find(t => t.id === ticketId);
+            if (ticket && content) {
+                const now = new Date();
+                const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')} ${now.getDate()}/${now.getMonth() + 1}`;
+                ticket.history.push({ sender: 'customer', text: content, time: timeStr });
+                ticket.status = 'Pending';
+                saveData();
+                closeCustomerReplyModal();
+                document.getElementById('customerReplyForm').reset();
+                renderCustomerTickets();
+                showAlertModal('✅ Đã Gửi', 'Tin nhắn phản hồi của bạn đã được chuyển đi!');
+            }
+        });
+
+        function openRatingModal(ticketId) {
+            document.getElementById('ratingTicketId').value = ticketId;
+            document.getElementById('ratingModal').style.display = 'flex';
+        }
+        document.querySelectorAll('#starRating span').forEach(star => {
+            star.addEventListener('click', (e) => {
+                selectedStars = parseInt(e.target.getAttribute('data-star'));
+                document.querySelectorAll('#starRating span').forEach(s => {
+                    const val = parseInt(s.getAttribute('data-star'));
+                    if (val <= selectedStars) s.classList.add('active');
+                    else s.classList.remove('active');
+                });
+            });
+        });
+        document.getElementById('ratingForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const ticketId = document.getElementById('ratingTicketId').value;
+            const comment = document.getElementById('ratingComment').value.trim();
+            const ticket = globalTickets.find(t => t.id === ticketId);
+            if (ticket) {
+                ticket.status = 'Closed';
+                ticket.rating = selectedStars;
+                ticket.ratingComment = comment;
+                ticket.hasUnreadReply = false;
+                saveData();
+                document.getElementById('ratingModal').style.display = 'none';
+                document.getElementById('ratingForm').reset();
+                renderCustomerTickets();
+                showAlertModal('🎉 Cảm Ơn', 'Cảm ơn bạn đã xác nhận và đánh giá dịch vụ hỗ trợ của chúng tôi!');
+            }
+        });
+
+        function downloadCSV(csvContent, fileName) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', fileName);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

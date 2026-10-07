@@ -1,0 +1,80 @@
+@model CustomerSupportAI.ViewModels.AdminUsersViewModel
+@{
+    ViewData["Title"] = "Tài khoản và quyền";
+}
+
+<header class="page-heading">
+<div>
+<span class="eyebrow">QUẢN TRỊ HỆ THỐNG</span>
+<h1>Tài khoản và quyền</h1>
+<p>Quản lý nhân viên hỗ trợ. Khách hàng có thể tự tạo tài khoản.</p>
+</div>
+</header>
+<div class="admin-users-layout">
+    <section class="data-section user-directory">
+        <div class="section-heading">
+<div>
+<h2>Tài khoản</h2>
+<p>Quyền truy cập được quản lý an toàn trên máy chủ.</p>
+</div>
+<span class="result-count">@Model.Users.Count tài khoản</span>
+</div>
+        <div class="table-scroll">
+<table class="data-table">
+<thead>
+<tr>
+<th>Người dùng</th>
+<th>Vai trò</th>
+<th>Yêu cầu</th>
+<th>Ngày tham gia</th>
+</tr>
+</thead>
+<tbody>
+        @foreach (var item in Model.Users)
+        {
+            <tr>
+<td>
+<div class="person-cell">
+<span class="avatar avatar-light">@item.User.DisplayName.Substring(0, 1).ToUpperInvariant()</span>
+<span>
+<strong>@item.User.DisplayName</strong>
+<small>@item.User.Email</small>
+</span>
+</div>
+</td>
+<td>
+<span class="role-tag role-@item.User.Role.ToLowerInvariant()">@DisplayText.Role(item.User.Role)</span>
+</td>
+<td>@item.TicketCount</td>
+<td>@item.User.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+</tr>
+        }
+        </tbody>
+</table>
+</div>
+    </section>
+    <aside class="staff-form-panel">
+        <span class="eyebrow">QUYỀN TRUY CẬP ĐỘI NGŨ</span>
+<h2>Thêm nhân viên hỗ trợ</h2>
+<p>Nhân viên mới có thể xem và phản hồi yêu cầu của khách hàng.</p>
+        <form asp-action="CreateStaff" method="post" class="form-stack">
+            <div asp-validation-summary="ModelOnly" class="validation-summary">
+</div>
+            <label asp-for="NewStaff.DisplayName">Họ và tên</label>
+<input asp-for="NewStaff.DisplayName" autocomplete="name" placeholder="Nguyễn Minh Anh" />
+<span asp-validation-for="NewStaff.DisplayName" class="field-error">
+</span>
+            <label asp-for="NewStaff.Email">Email công việc</label>
+<input asp-for="NewStaff.Email" autocomplete="email" placeholder="nhanvien@congty.vn" />
+<span asp-validation-for="NewStaff.Email" class="field-error">
+</span>
+            <label asp-for="NewStaff.TemporaryPassword">Mật khẩu tạm thời</label>
+<input asp-for="NewStaff.TemporaryPassword" autocomplete="new-password" placeholder="Ít nhất 10 ký tự" />
+<span asp-validation-for="NewStaff.TemporaryPassword" class="field-error">
+</span>
+            <button class="button button-primary button-wide" type="submit">Tạo tài khoản nhân viên <span aria-hidden="true">&rarr;</span>
+</button>
+            <small class="form-hint">Hãy gửi mật khẩu tạm thời qua kênh bảo mật. Chức năng đặt lại mật khẩu chưa được cấu hình.</small>
+        </form>
+    </aside>
+</div>
